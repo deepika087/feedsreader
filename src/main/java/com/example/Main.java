@@ -51,10 +51,6 @@ public class Main {
     SpringApplication.run(Main.class, args);
   }
 
-  @RequestMapping(method = RequestMethod.GET, value = "/ping")
-  String index() {
-    return "Feed reader app is up and running ! ! ";
-  }
 
   @RequestMapping("/db")
   String db(Map<String, Object> model) {
