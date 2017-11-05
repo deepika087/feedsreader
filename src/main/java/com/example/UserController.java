@@ -42,8 +42,9 @@ public class UserController {
 	public @ResponseBody List<FeedData> getFeeds(@PathVariable String username) {
 		
 		try {
-			logger.info("Request to return Feeds for user: ", username);
+			logger.info("Request to return Feeds for user: " + username);
 			List<FeedData> feeds = dataManagement.getFeedData(username);
+			logger.info("Feeds received: "+ feeds);
 			return feeds;
 		} catch (FeedReaderException ex) {
 			return new ArrayList<FeedData>();

@@ -256,6 +256,7 @@ public class DataManagement {
 					feed_instance.artciles = getArticlesForFeed(feed_instance.feedName);
 					feed_result.add(feed_instance);
 				}
+				return feed_result;
 			}
 			
 		} finally {
