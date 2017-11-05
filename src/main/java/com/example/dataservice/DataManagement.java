@@ -241,7 +241,11 @@ public class DataManagement {
 				Document user_document = user_cursor.next();
 				
 				//2. Get All feed ids for this user
-				List<String> feed_ids = (List<String>) user_document.get("feedids");
+				List<String> feed_ids = (List<String>) user_document.get("feedIds");
+				
+				if (feed_ids == null || feed_ids.isEmpty()) {
+					throw new FeedReaderException("This user isn't subscribed to any feed");
+				}
 				
 				MongoCollection<Document> feed_collection = db.getCollection(DataConstants.FEEDS_COLLECTION);
 				
@@ -274,6 +278,10 @@ public class DataManagement {
             	
                 Document doc = cursor.next();
                 List<String> artcile_ids = (List<String>) doc.get("articleIds");
+                
+                if (artcile_ids == null || artcile_ids.isEmpty()){
+                	return articles;
+                }
                 
                 for (String article_id : artcile_ids) {
                 	articles.add(getArticleContentByID(article_id));
