@@ -31,7 +31,7 @@ private final Logger logger = LoggerFactory.getLogger(this.getClass());
 	@RequestMapping(value = "/{feedname}", method = RequestMethod.POST)
 	public @ResponseBody Messages createFeed(@PathVariable String feedname) {
 		
-		logger.info("I am reaching here with feedname: " + feedname);
+		logger.info("Request for feedname: " + feedname);
 		try {
 			String id_created = dataManagement.createFeed(feedname);
 			return new Messages(200, "Feed is created with unique id: " + id_created);
@@ -43,10 +43,10 @@ private final Logger logger = LoggerFactory.getLogger(this.getClass());
 	@RequestMapping(method = RequestMethod.GET)
 	public @ResponseBody List<Feed> getFeeds() {
 		
-		logger.info("I am reaching here to fetch all feeds: " );
+		logger.info("Fetching all feeds...." );
 		try {
 			List<Feed> feeds = dataManagement.getAllFeeds();
-			logger.info("Actually received something ! ! ");
+			logger.info("Actually received something from feed collection ! ! ");
 			return feeds;
 		} catch (FeedReaderException ex) {
 			return new ArrayList<Feed>();
@@ -68,6 +68,19 @@ private final Logger logger = LoggerFactory.getLogger(this.getClass());
 		}	
 	}
 	
+	@RequestMapping(
+			value = "/{username}/subscribe/{feedname}", 
+			method = RequestMethod.POST)
 	
-
+	public @ResponseBody Messages subsribeUser(@PathVariable String username, @PathVariable String feedname) {
+		
+		logger.info("I am reaching here with feedname: " + feedname);
+		try {
+			dataManagement.subscribeFeed(feedname, feedname);
+			return new Messages(200, "User : " + username + " has been subscribed to: "+ feedname);
+		} catch (FeedReaderException ex) {
+			return new Messages(404, "Either user is invalid or user alreay present in DB");
+		}	
+	}
+	
 }

@@ -141,6 +141,40 @@ public class DataManagement {
             cursor.close();
         }
 		throw new FeedReaderException("something went wrong while attaching article to feed.It is possible that feed with this name is not present " + feedname);
+	}
+	
+	public void subscribeFeed(final String userName, final String feedName) throws FeedReaderException {
+		
+		logger.info("Reaching here with to subscribe" + userName + " to feedName" + feedName);
+		MongoDatabase db = DataManagement.getMongoDB();
+		MongoCollection<Document> user_collection = db.getCollection(DataConstants.USER_COLLECTION);
+		
+		Document findQuery = new Document("username", new Document("$eq", userName));
+		MongoCursor<Document> cursor = user_collection.find(findQuery).iterator();
+		try {
+            while (cursor.hasNext()) {
+            	
+                Document doc = cursor.next();
+                List<String> feed_list =  (List<String>)doc.get("feedIds");
+                if (feed_list == null) {
+                	feed_list = new ArrayList<String>();
+                }
+                if (feed_list.contains(feedName)) {
+                	throw new FeedReaderException("This user is already subscribed ! !");
+                }
+                feed_list.add(feedName);
+                
+                logger.info("List of feed_list formed: " + feed_list);
+                Document feed_subscription = new Document();
+                feed_subscription.append("$set", new Document("feedIds", feed_list));
+                user_collection.updateOne(findQuery, feed_subscription); 
+                logger.info("Update Mongodb with subscription list. Please check");
+            }
+        } finally {
+            cursor.close();
+        }
+		throw new FeedReaderException("something went wrong while subscription.It is possible that feed with this name is not present " + userName);
+		
 		
 	}
 	
