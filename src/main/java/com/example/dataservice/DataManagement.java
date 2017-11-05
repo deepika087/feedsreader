@@ -195,18 +195,22 @@ public class DataManagement {
             while (cursor.hasNext()) {
             	
                 Document doc = cursor.next();
-                List<String> feed_list =  (List<String>)doc.get("feedIds"); //List of Ids
-                if (feed_list == null) {
-                	feed_list = new ArrayList<String>();
+                List<String> feed_ids =  (List<String>)doc.get("feedIds"); //List of Ids
+                if (feed_ids == null) {
+                	feed_ids = new ArrayList<String>();
+                } else {
+                	List<String> feed_names = getFeedNames(feed_ids);
+                	if (!feed_names.contains(feedName)) {
+                    	throw new FeedReaderException("This user is not subscribed to this feed ! !");
+                    }
                 }
-                if (!feed_list.contains(feedName)) {
-                	throw new FeedReaderException("User is not subscribed to this feed");
-                }
-                feed_list.add(feedName);
                 
-                logger.info("List of feed_list formed: " + feed_list);
+                String result_feed_id = getFeedId(feedName);
+                feed_ids.remove(result_feed_id);
+                
+                logger.info("List of feed_list formed: " + feed_ids);
                 Document feed_subscription = new Document();
-                feed_subscription.append("$set", new Document("feedIds", feed_list));
+                feed_subscription.append("$set", new Document("feedIds", feed_ids));
                 user_collection.updateOne(findQuery, feed_subscription); 
                 logger.info("Update Mongodb with subscription list. Please check");
                 return "";
