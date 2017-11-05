@@ -9,7 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.example.constants.DataConstants;
+import com.example.datamodels.Article;
 import com.example.datamodels.Feed;
+import com.example.datamodels.FeedData;
 import com.example.exceptions.FeedReaderException;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
@@ -219,6 +221,89 @@ public class DataManagement {
             cursor.close();
         }
 		throw new FeedReaderException("User not present in DB");
+	}
+	
+	public List<FeedData> getFeedData(final String userName) throws FeedReaderException {
+		
+		//1. Check is user is valid
+		MongoDatabase db = DataManagement.getMongoDB();
+		MongoCollection<Document> user_collection = db.getCollection(DataConstants.USER_COLLECTION);
+		
+		Document findQuery = new Document("username", new Document("$eq", userName));
+		MongoCursor<Document> user_cursor = user_collection.find(findQuery).iterator();
+		
+		try {
+			
+			while (user_cursor.hasNext()) {
+				
+				final List<FeedData> feed_result = new ArrayList<FeedData>();
+				
+				Document user_document = user_cursor.next();
+				
+				//2. Get All feed ids for this user
+				List<String> feed_ids = (List<String>) user_document.get("feedids");
+				
+				MongoCollection<Document> feed_collection = db.getCollection(DataConstants.FEEDS_COLLECTION);
+				
+				for (String feed_id : feed_ids) {
+					final FeedData feed_instance = new FeedData();
+					feed_instance.feedName =  getFeedName(feed_id);
+					
+					feed_instance.artciles = getArticlesForFeed(feed_instance.feedName);
+					feed_result.add(feed_instance);
+				}
+			}
+			
+		} finally {
+			user_cursor.close();
+		}
+		throw new FeedReaderException("User is not present in DB");
+	}
+	
+	private List<String> getArticlesForFeed(String feedName) throws FeedReaderException{
+		
+		MongoDatabase db = DataManagement.getMongoDB();
+		MongoCollection<Document> feed_collection = db.getCollection(DataConstants.FEEDS_COLLECTION);
+		Document query = new Document();
+	    query.put("feedname", feedName);
+	    
+	    List<String> articles = new ArrayList<>();
+	    MongoCursor<Document> cursor = feed_collection.find(query).iterator();
+	    try {
+            while (cursor.hasNext()) {
+            	
+                Document doc = cursor.next();
+                List<String> artcile_ids = (List<String>) doc.get("articleIds");
+                
+                for (String article_id : artcile_ids) {
+                	articles.add(getArticleContentByID(article_id));
+				}
+                return articles;
+            }
+        } finally {
+            cursor.close();
+        }
+	    throw new FeedReaderException("Feed not found in DB for " + feedName);
+	}
+	
+	private String getArticleContentByID(String article_id) throws FeedReaderException {
+		MongoDatabase db = DataManagement.getMongoDB();
+		MongoCollection<Document> article_collection = db.getCollection(DataConstants.ARTICLES_COLLECTION);
+		
+		Document query = new Document();
+	    query.put("_id", new ObjectId(article_id));
+
+	    MongoCursor<Document> cursor = article_collection.find(query).iterator();
+	    try {
+            while (cursor.hasNext()) {
+            	
+                Document doc = cursor.next();
+                return doc.getString("content");
+            }
+        } finally {
+            cursor.close();
+        }
+	    throw new FeedReaderException("Article not found for id: " + article_id);
 	}
 	
 	//This function takes feed ids as input and returns feed names as output

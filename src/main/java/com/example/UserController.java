@@ -1,5 +1,8 @@
 package com.example;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.example.datamodels.FeedData;
 import com.example.datamodels.Messages;
 import com.example.dataservice.DataManagement;
 import com.example.exceptions.FeedReaderException;
@@ -34,6 +38,17 @@ public class UserController {
 		}	
 	}
 	
-	
+	@RequestMapping(value = "/feeds", method = RequestMethod.GET) 
+	public @ResponseBody List<FeedData> getFeeds(@PathVariable String username) {
+		
+		try {
+			logger.info("Request to return Feeds for user: ", username);
+			List<FeedData> feeds = dataManagement.getFeedData(username);
+			return feeds;
+		} catch (FeedReaderException ex) {
+			return new ArrayList<FeedData>();
+		}	
+		
+	}
 	
 }
