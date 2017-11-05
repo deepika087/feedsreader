@@ -68,7 +68,7 @@ public class DataManagement {
 	        while (cursor.hasNext()) {
 	        	Document doc = cursor.next();
 	        	logger.info("DUMPPED DOCUMENT: " + doc);
-	        	return doc.getString("_id");
+	        	return doc.get("_id").toString();
 	        }
 		} finally {
 		    cursor.close();
