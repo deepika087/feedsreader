@@ -16,19 +16,19 @@
 
 package com.example;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.example.datamodels.Messages;
 import com.example.dataservice.DataManagement;
 
 @Controller
 @SpringBootApplication
+@EnableAutoConfiguration
+@ComponentScan(basePackages = {"com.example", "com.example.dataservice"})
 public class Main {
 
   //@Autowired
@@ -37,16 +37,9 @@ public class Main {
   public static void main(String[] args) throws Exception {
     SpringApplication.run(Main.class, args);
   }
-
-  @RequestMapping("/db")
-  public @ResponseBody Messages db() {
-	System.out.println("REACHING HERE");
-    String result =  DataManagement.getMongoDB();
-    System.out.println("Result found : " + result);
-    
-    if (result != null) {
-    	return new Messages(200, "Your result : " + result);
-    }
-    return new Messages(404, "Something went wrong");
+  
+  @Bean
+  public DataManagement dataManagement() {
+	  return new DataManagement();
   }
 }
