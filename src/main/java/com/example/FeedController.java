@@ -69,17 +69,17 @@ private final Logger logger = LoggerFactory.getLogger(this.getClass());
 	}
 	
 	@RequestMapping(
-			value = "/{username}/subscribe/{feedname}", 
+			value = "/{feedname}/subscribe/{username}", 
 			method = RequestMethod.POST)
 	
-	public @ResponseBody Messages subsribeUser(@PathVariable String username, @PathVariable String feedname) {
+	public @ResponseBody Messages subsribeUser(@PathVariable String feedname, @PathVariable String username) {
 		
 		logger.info("I am reaching here with feedname: " + feedname);
 		try {
-			dataManagement.subscribeFeed(feedname, feedname);
+			dataManagement.subscribeFeed(feedname, username);
 			return new Messages(200, "User : " + username + " has been subscribed to: "+ feedname);
 		} catch (FeedReaderException ex) {
-			return new Messages(404, "Either user is invalid or user alreay present in DB");
+			return new Messages(404, ex.getMessage());
 		}	
 	}
 	

@@ -143,7 +143,7 @@ public class DataManagement {
 		throw new FeedReaderException("something went wrong while attaching article to feed.It is possible that feed with this name is not present " + feedname);
 	}
 	
-	public void subscribeFeed(final String userName, final String feedName) throws FeedReaderException {
+	public void subscribeFeed(final String feedName, final String userName) throws FeedReaderException {
 		
 		logger.info("Reaching here with to subscribe" + userName + " to feedName" + feedName);
 		MongoDatabase db = DataManagement.getMongoDB();
