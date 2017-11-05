@@ -93,12 +93,29 @@ public class DataManagement {
                 Document doc = cursor.next();
                 
                 Feed new_feed = new Feed(doc.getString("feedname"), (List<String>)doc.get("articleIds"));
+                new_feed.setId(doc.get("_id").toString());
                 feed_data.add(new_feed);  
             }
         } finally {
             cursor.close();
         }
 		return feed_data;
+	}
+	
+	public String createArticle(final String feedname, final String article_body) throws FeedReaderException{
+		
+		//1. Insertion directly in articles collection 
+		MongoDatabase db = DataManagement.getMongoDB();
+		MongoCollection<Document> corresponding_collection = db.getCollection(DataConstants.ARTICLES_COLLECTION);
+		
+		Document doc_to_be_inserted = new Document("content", article_body);
+		
+		corresponding_collection.insertOne(  doc_to_be_inserted );
+		
+		String article_id = doc_to_be_inserted.getObjectId("_id").toString();
+		logger.info("ID of the ID just created" + article_id);
+		return article_id;
+		
 	}
 	
 }	
