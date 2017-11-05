@@ -83,4 +83,18 @@ private final Logger logger = LoggerFactory.getLogger(this.getClass());
 		}	
 	}
 	
+	@RequestMapping(
+			value = "/{feedname}/unsubscribe/{username}", 
+			method = RequestMethod.POST)
+	
+	public @ResponseBody Messages unsubsribeUser(@PathVariable String feedname, @PathVariable String username) {
+		
+		logger.info("Request to unsubsribe from feedname: " + feedname + " for user: " + username);
+		try {
+			dataManagement.unsubscribeFeed(feedname, username);
+			return new Messages(200, "User : " + username + " has been unsubscribed from: "+ feedname);
+		} catch (FeedReaderException ex) {
+			return new Messages(404, ex.getMessage());
+		}	
+	}
 }

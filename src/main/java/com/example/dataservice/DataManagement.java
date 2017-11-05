@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -143,7 +144,7 @@ public class DataManagement {
 		throw new FeedReaderException("something went wrong while attaching article to feed.It is possible that feed with this name is not present " + feedname);
 	}
 	
-	public void subscribeFeed(final String feedName, final String userName) throws FeedReaderException {
+	public String subscribeFeed(final String feedName, final String userName) throws FeedReaderException {
 		
 		logger.info("Reaching here with to subscribe" + userName + " to feedName" + feedName);
 		MongoDatabase db = DataManagement.getMongoDB();
@@ -155,12 +156,51 @@ public class DataManagement {
             while (cursor.hasNext()) {
             	
                 Document doc = cursor.next();
-                List<String> feed_list =  (List<String>)doc.get("feedIds");
+                List<String> feed_ids =  (List<String>)doc.get("feedIds");
+                if (feed_ids == null) {
+                	feed_ids = new ArrayList<String>();
+                }
+                else {
+                	List<String> feed_names = getFeedNames(feed_ids);
+                	if (feed_names.contains(feedName)) {
+                    	throw new FeedReaderException("This user is already subscribed ! !");
+                    }
+                }
+                
+                String result_feed_id = getFeedId(feedName);
+                feed_ids.add(result_feed_id);
+                
+                logger.info("List of feed_list formed: " + feed_ids);
+                Document feed_subscription = new Document();
+                feed_subscription.append("$set", new Document("feedIds", feed_ids));
+                user_collection.updateOne(findQuery, feed_subscription); 
+                logger.info("Update Mongodb with subscription list. Please check");
+                return "";
+            }
+        } finally {
+            cursor.close();
+        }
+		throw new FeedReaderException("User is not present in the DB " + userName);
+	}
+	
+	public String unsubscribeFeed(final String feedName, final String userName) throws FeedReaderException {
+		
+		logger.info("Reaching here with to unsubscribe" + userName + " from feedName" + feedName);
+		MongoDatabase db = DataManagement.getMongoDB();
+		MongoCollection<Document> user_collection = db.getCollection(DataConstants.USER_COLLECTION);
+		
+		Document findQuery = new Document("username", new Document("$eq", userName));
+		MongoCursor<Document> cursor = user_collection.find(findQuery).iterator();
+		try {
+            while (cursor.hasNext()) {
+            	
+                Document doc = cursor.next();
+                List<String> feed_list =  (List<String>)doc.get("feedIds"); //List of Ids
                 if (feed_list == null) {
                 	feed_list = new ArrayList<String>();
                 }
-                if (feed_list.contains(feedName)) {
-                	throw new FeedReaderException("This user is already subscribed ! !");
+                if (!feed_list.contains(feedName)) {
+                	throw new FeedReaderException("User is not subscribed to this feed");
                 }
                 feed_list.add(feedName);
                 
@@ -169,13 +209,63 @@ public class DataManagement {
                 feed_subscription.append("$set", new Document("feedIds", feed_list));
                 user_collection.updateOne(findQuery, feed_subscription); 
                 logger.info("Update Mongodb with subscription list. Please check");
+                return "";
             }
         } finally {
             cursor.close();
         }
-		throw new FeedReaderException("something went wrong while subscription.It is possible that feed with this name is not present " + userName);
+		throw new FeedReaderException("User not present in DB");
+	}
+	
+	//This function takes feed ids as input and returns feed names as output
+	private List<String> getFeedNames(List<String> feed_ids) {
 		
+		List<String> feed_names = new ArrayList<>();
+		for (String feed_id : feed_ids) {
+			feed_names.add(getFeedName(feed_id));
+		}
+		return feed_names;
 		
 	}
 	
+	private String getFeedName(String feed_id) {
+		
+		MongoDatabase db = DataManagement.getMongoDB();
+		MongoCollection<Document> feed_collection = db.getCollection(DataConstants.FEEDS_COLLECTION);
+		
+		Document query = new Document();
+	    query.put("_id", new ObjectId(feed_id));
+
+	    MongoCursor<Document> cursor = feed_collection.find(query).iterator();
+	    try {
+            while (cursor.hasNext()) {
+            	
+                Document doc = cursor.next();
+                return doc.getString("feedname");
+            }
+        } finally {
+            cursor.close();
+        }
+	    return "";
+	}
+	
+	private String getFeedId(String feedname) throws FeedReaderException {
+		
+		MongoDatabase db = DataManagement.getMongoDB();
+		MongoCollection<Document> feed_collection = db.getCollection(DataConstants.FEEDS_COLLECTION);
+		
+		Document query = new Document();
+	    query.put("feedname", feedname);
+	    MongoCursor<Document> cursor = feed_collection.find(query).iterator();
+	    try {
+            while (cursor.hasNext()) {
+            	
+                Document doc = cursor.next();
+                return doc.get("_id").toString();
+            }
+        } finally {
+            cursor.close();
+        }
+		throw new FeedReaderException("Feed is not present in the DB");
+	}
 }	
