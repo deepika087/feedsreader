@@ -33,8 +33,8 @@ public class Main {
   @Value("${spring.datasource.url}")
   private String dbUrl;
 
-  @Autowired
-  private DataManagement datasource;
+  //@Autowired
+  //private DataManagement datasource;
 
   public static void main(String[] args) throws Exception {
     SpringApplication.run(Main.class, args);
@@ -42,7 +42,7 @@ public class Main {
 
   @RequestMapping("/db")
   Messages db() {
-    String result =  datasource.getMongoDB();
+    String result =  DataManagement.getMongoDB();
     if (result != null) {
     	return new Messages(200, result);
     }
