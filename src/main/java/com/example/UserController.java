@@ -25,16 +25,15 @@ public class UserController {
 	@RequestMapping(method = RequestMethod.POST)
 	public @ResponseBody Messages add(@PathVariable String username) {
 		
-		logger.debug("I am reaching here with user name: " + username);
-		System.out.println("I am here: deepika with user name = " + username);
+		logger.info("I am reaching here with user name: " + username);
 		try {
-			dataManagement.createUser(username);
-			return new Messages(200, "User created with id: ");
+			String id_created = dataManagement.createUser(username);
+			return new Messages(200, "User created with id: " + id_created);
 		} catch (FeedReaderException ex) {
 			return new Messages(404, "Username already present");
 		}	
 	}
 	
 	
-
+	
 }
