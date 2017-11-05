@@ -30,9 +30,6 @@ import com.example.dataservice.DataManagement;
 @SpringBootApplication
 public class Main {
 
-  @Value("${spring.datasource.url}")
-  private String dbUrl;
-
   //@Autowired
   //private DataManagement datasource;
 
@@ -41,11 +38,12 @@ public class Main {
   }
 
   @RequestMapping("/db")
-  Messages db() {
+  public Messages db() {
+	  System.out.println("REACHING HERE");
     String result =  DataManagement.getMongoDB();
     if (result != null) {
     	return new Messages(200, "Your result : " + result);
     }
-    return new Messages(200, "Something went wrong");
+    return new Messages(404, "Something went wrong");
   }
 }
