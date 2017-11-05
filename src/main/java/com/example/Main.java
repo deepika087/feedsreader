@@ -22,6 +22,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.datamodels.Messages;
 import com.example.dataservice.DataManagement;
@@ -38,9 +39,11 @@ public class Main {
   }
 
   @RequestMapping("/db")
-  public Messages db() {
-	  System.out.println("REACHING HERE");
+  public @ResponseBody Messages db() {
+	System.out.println("REACHING HERE");
     String result =  DataManagement.getMongoDB();
+    System.out.println("Result found : " + result);
+    
     if (result != null) {
     	return new Messages(200, "Your result : " + result);
     }
