@@ -64,7 +64,7 @@ private final Logger logger = LoggerFactory.getLogger(this.getClass());
 			String id_created = dataManagement.createArticle(feedname, pBody);
 			return new Messages(200, "New article with id : " + id_created + " created in feed: "+ feedname);
 		} catch (FeedReaderException ex) {
-			return new Messages(404, "Artcile could not be successfully added ! ! ");
+			return new Messages(404, "Artcile could not be successfully added ! !. May be the feed itself wasn't present in the Database ");
 		}	
 	}
 	
