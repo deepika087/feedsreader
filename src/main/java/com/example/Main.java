@@ -44,7 +44,7 @@ public class Main {
   Messages db() {
     String result =  DataManagement.getMongoDB();
     if (result != null) {
-    	return new Messages(200, result);
+    	return new Messages(200, "Your result : " + result);
     }
     return new Messages(200, "Something went wrong");
   }
