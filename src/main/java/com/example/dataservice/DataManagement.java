@@ -104,17 +104,42 @@ public class DataManagement {
 	
 	public String createArticle(final String feedname, final String article_body) throws FeedReaderException{
 		
+		logger.info("Reaching here with feedname" + feedname + " and artcile_body" + article_body);
 		//1. Insertion directly in articles collection 
 		MongoDatabase db = DataManagement.getMongoDB();
-		MongoCollection<Document> corresponding_collection = db.getCollection(DataConstants.ARTICLES_COLLECTION);
+		MongoCollection<Document> artcile_collection = db.getCollection(DataConstants.ARTICLES_COLLECTION);
 		
 		Document doc_to_be_inserted = new Document("content", article_body);
 		
-		corresponding_collection.insertOne(  doc_to_be_inserted );
+		artcile_collection.insertOne(  doc_to_be_inserted );
 		
 		String article_id = doc_to_be_inserted.getObjectId("_id").toString();
 		logger.info("ID of the ID just created" + article_id);
-		return article_id;
+		
+		//2. Associate article in Feed
+		MongoCollection<Document> feeds_collection = db.getCollection(DataConstants.FEEDS_COLLECTION);
+		Document findQuery = new Document("feedname", new Document("$eq", feedname));
+		MongoCursor<Document> cursor = feeds_collection.find(findQuery).iterator();
+		try {
+            while (cursor.hasNext()) {
+                Document doc = cursor.next();
+                List<String> old_list =  (List<String>)doc.get("articleIds");
+                if (old_list == null) {
+                	old_list = new ArrayList<String>();
+                }
+                old_list.add(article_id);
+                
+                logger.info("List of article formed: " + old_list);
+                Document push_articles = new Document();
+                push_articles.append("$set", new Document("articleIds", old_list));
+                feeds_collection.updateOne(findQuery, push_articles); 
+                logger.info("Update Mongodb. Please check");
+                return article_id;
+            }
+        } finally {
+            cursor.close();
+        }
+		throw new FeedReaderException("something went wrong while attaching article to feed " + feedname);
 		
 	}
 	
