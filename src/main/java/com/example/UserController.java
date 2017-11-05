@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.datamodels.Messages;
 import com.example.dataservice.DataManagement;
@@ -22,7 +23,7 @@ public class UserController {
 	DataManagement dataManagement;
 	
 	@RequestMapping(method = RequestMethod.POST)
-	Messages add(@PathVariable String username) {
+	public @ResponseBody Messages add(@PathVariable String username) {
 		
 		logger.debug("I am reaching here with user name: " + username);
 		System.out.println("I am here: deepika with user name = " + username);

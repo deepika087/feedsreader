@@ -1,6 +1,8 @@
 package com.example.dataservice;
 
 import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.example.constants.DataConstants;
 import com.example.exceptions.FeedReaderException;
@@ -11,7 +13,7 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 
 public class DataManagement {
-	
+	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 	public static MongoClientURI uri;
 	public static MongoClient client;
 	
@@ -52,6 +54,7 @@ public class DataManagement {
 		try {
 	        while (cursor.hasNext()) {
 	        	Document doc = cursor.next();
+	        	logger.info("DUMPPED DOCUMENT: " + doc);
 	        	System.out.println("DUMPPED DOCUMENT: " + doc);
 	        }
 		} finally {
